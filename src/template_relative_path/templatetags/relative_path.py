@@ -43,7 +43,6 @@ class filesystem(fs.Loader):
 
     def load_template(self, template_name, template_dirs=None):
         source, origin = self.load_template_source(template_name, template_dirs)
-        #print "\nfilesystem source:\n\n'%s'\n\norigin: '%s'\ntemplate_name: '%s'\n\n" % (source, origin, template_name)
         template = Template(source, name=template_name)
         return template, origin
 
@@ -59,8 +58,8 @@ from django import template
 register = template.Library()
 
 # !!! ATTENTION !!!
-# disable rule, that 'extends' must be first tag in template
-# this need for {% load %} tag
+# it disable rule, that 'extends' must be first tag in template
+# this need for first {% load %} tag
 class ExtendsNode(ExtendsNodeParent):
     must_be_first = False
 
@@ -70,8 +69,7 @@ def do_extends(parser, token):
     if len(bits) != 2:
         raise TemplateSyntaxError("'%s' takes one argument" % bits[0])
 
-    print "\ndo_extends: '%s' template_name: '%s'" % (bits[1], parser.template_name)
-
+    #print "\ndo_extends: '%s' template_name: '%s'" % (bits[1], parser.template_name)
     parent_name = parser.compile_filter(bits[1])
     nodelist = parser.parse()
     if nodelist.get_nodes_by_type(ExtendsNode):
