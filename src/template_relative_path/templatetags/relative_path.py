@@ -8,7 +8,7 @@ class filesystem(fs.Loader):
 
     def load_template(self, template_name, template_dirs=None):
         source, origin = self.load_template_source(template_name, template_dirs)
-        logging.info("filesystem source: '%s' origin: '%s'" % (source, origin))
+        print "\nfilesystem source:\n\n'%s'\n\norigin: '%s'\ntemplate_name: '%s'\n\n" % (source, origin, template_name)
 
         template = Template(source)
         return template, origin
@@ -18,7 +18,7 @@ class app_directories(ad.Loader):
 
     def load_template(self, template_name, template_dirs=None):
         source, origin = self.load_template_source(template_name, template_dirs)
-        logging.info("app_directories source: '%s' origin: '%s'" % (source, origin))
+        print "\napp_directories source:\n\n'%s'\n\norigin:\n\n'%s'\n\n" % (source, origin)
 
         template = Template(source)
         return template, origin
@@ -28,6 +28,9 @@ register = template.Library()
 
 @register.tag('extends')
 def do_extends(parser, token):
+
+    print "\ndo_extends token: '%s'\n" % token
+
     bits = token.split_contents()
     if len(bits) != 2:
         raise TemplateSyntaxError("'%s' takes one argument" % bits[0])
