@@ -21,8 +21,12 @@ import os
 
 import django
 from django.conf import settings
+from django import template
+from django.template.loader import get_template
 
 ROOT_PROJECT = os.path.dirname(os.path.abspath(__file__))
+
+#print "django version", django.VERSION
 
 settings.configure(
 
@@ -54,12 +58,6 @@ settings.configure(
 #        },
 #    }]
 )
-
-#print "django version", django.VERSION
-django.setup()
-
-from django import template
-from django.template.loader import get_template
 
 c = template.Context({})
 
