@@ -39,10 +39,17 @@ if ver_major == 1:
                 'BACKEND': 'django.template.backends.django.DjangoTemplates',
                 'DIRS': [os.path.join(ROOT_PROJECT, 'tpl').replace('\\', '/')],
                 'OPTIONS': {
+
                     'loaders': [
                         'template_relative_path.templatetags.relative_path.filesystem',
                         'template_relative_path.templatetags.relative_path.app_directories',
                     ],
+
+                    'libraries': {
+                        'relative_path': 'template_relative_path.templatetags.relative_path',
+                    },
+
+
                 },
             }],
         )

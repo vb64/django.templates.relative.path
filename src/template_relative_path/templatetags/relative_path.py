@@ -6,6 +6,10 @@ from django.template.loader_tags import IncludeNode, ExtendsNode as ExtendsNodeP
 from django.template.base import TemplateSyntaxError, TemplateEncodingError, StringOrigin, Lexer, Parser, Template as TemplateParent
 from django.utils.encoding import smart_unicode
 
+# 1.9
+from django.template import Origin, Template as Template_1_9_parent, TemplateDoesNotExist
+from django.utils.inspect import func_supports_parameter
+
 def compile_string(template_string, origin, name):
     "Compiles template_string into NodeList ready for rendering"
     if settings.TEMPLATE_DEBUG:
@@ -32,7 +36,6 @@ class Template(TemplateParent):
         self.origin = origin
 
         # !!! ATTENTION !!!
-        # for django.VERSION > 1.4
         # always use default engine for render
         try:
             from django.template.engine import Engine
@@ -55,6 +58,43 @@ class app_directories(ad.Loader):
         source, origin = self.load_template_source(template_name, template_dirs)
         template = Template(source, name=template_name)
         return template, origin
+
+class Template_1_9(Template_1_9_parent):
+    pass
+
+class filesystem_1_9(fs.Loader):
+
+    def get_template(self, template_name, template_dirs=None, skip=None):
+        """
+        Calls self.get_template_sources() and returns a Template object for
+        the first template matching template_name. If skip is provided,
+        template origins in skip are ignored. This is used to avoid recursion
+        during template extending.
+        """
+        tried = []
+
+        args = [template_name]
+        # RemovedInDjango20Warning: Add template_dirs for compatibility with
+        # old loaders
+        if func_supports_parameter(self.get_template_sources, 'template_dirs'):
+            args.append(template_dirs)
+
+        for origin in self.get_template_sources(*args):
+            if skip is not None and origin in skip:
+                tried.append((origin, 'Skipped'))
+                continue
+
+            try:
+                contents = self.get_contents(origin)
+            except TemplateDoesNotExist:
+                tried.append((origin, 'Source does not exist'))
+                continue
+            else:
+                return Template_1_9(
+                    contents, origin, origin.template_name, self.engine,
+                )
+
+        raise TemplateDoesNotExist(template_name, tried=tried)
 
 from django import template
 register = template.Library()
