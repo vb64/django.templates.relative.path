@@ -6,6 +6,10 @@ Test script for django relative_path module
 u'Base1. sub2 content'
 >>> rend('subdir/sub3.html')
 u'Base1. sub33 content'
+>>> rend('subdir/sub4.html')
+Traceback (most recent call last):
+...
+TemplateSyntaxError: Relative name '"...base1.html"' have more parent folders, then given name 'subdir/sub4.html'
 >>> rend('subdir/subdir2/sub3.html')
 u'Base1. sub3 content'
 >>> rend('subdir/subdir2/sub4.html')
