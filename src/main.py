@@ -26,38 +26,52 @@ from django.template.loader import get_template
 
 ROOT_PROJECT = os.path.dirname(os.path.abspath(__file__))
 
-#print "django version", django.VERSION
+ver_major, ver_minor = django.VERSION[:2]
 
-settings.configure(
+if ver_major == 1:
 
-    DEBUG = True, 
-    TEMPLATE_DEBUG = True,
+    if ver_minor > 8:
+        settings.configure(
 
-    TEMPLATE_DIRS = (
-        os.path.join(ROOT_PROJECT, 'tpl').replace('\\', '/'),
-    ),
+            DEBUG = True, 
 
-    TEMPLATE_LOADERS = (
-        'template_relative_path.templatetags.relative_path.filesystem',
-        'template_relative_path.templatetags.relative_path.app_directories',
-    ),
+            TEMPLATES = [{
+                'BACKEND': 'django.template.backends.django.DjangoTemplates',
+                'DIRS': [os.path.join(ROOT_PROJECT, 'tpl').replace('\\', '/')],
+                'OPTIONS': {
+                    'loaders': [
+                        'template_relative_path.templatetags.relative_path.filesystem',
+                        'template_relative_path.templatetags.relative_path.app_directories',
+                    ],
+                },
+            }],
+        )
 
-    INSTALLED_APPS = ( 
-        'template_relative_path',
-    ),
+    else:
 
-    # for django version > 1.4
-#    TEMPLATES = [{
-#        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-#        'DIRS': [os.path.join(ROOT_PROJECT, 'tpl').replace('\\', '/')],
-#        'OPTIONS': {
-#            'loaders': [
-#                'template_relative_path.templatetags.relative_path.filesystem',
-#                'template_relative_path.templatetags.relative_path.app_directories',
-#            ],
-#        },
-#    }]
-)
+        settings.configure(
+        
+            DEBUG = True, 
+            TEMPLATE_DEBUG = True,
+        
+            TEMPLATE_DIRS = (
+                os.path.join(ROOT_PROJECT, 'tpl').replace('\\', '/'),
+            ),
+        
+            TEMPLATE_LOADERS = (
+                'template_relative_path.templatetags.relative_path.filesystem',
+                'template_relative_path.templatetags.relative_path.app_directories',
+            ),
+        
+            INSTALLED_APPS = ( 
+                'template_relative_path',
+            ),
+        
+        )
+
+
+    if ver_minor > 6:
+        django.setup()
 
 c = template.Context({})
 
