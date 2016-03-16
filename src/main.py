@@ -14,6 +14,8 @@ TemplateSyntaxError: Relative name '"...base1.html"' have more parent folders, t
 u'Base1. sub3 content'
 >>> rend('subdir/subdir2/sub4.html')
 u'Base2. sub4 content'
+>>> rend('subdir/subdir2/sub5.html')
+u'Base2. include content'
 """
 import os
 
