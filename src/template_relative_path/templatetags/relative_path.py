@@ -5,7 +5,7 @@ Origin: https://github.com/vb64/django.templates.relative.path
 
 The problem: http://stackoverflow.com/questions/671369/django-specifying-a-base-template-by-directory
 {% extends "../base.html" %} won't work with extends.
-This causes a lot of inconvenience, if you have an extensive hierarchy of django templates.
+It causes a lot of inconvenience, if you have an extensive hierarchy of django templates.
 This library is implementing standard python rules for relative import (from ...module import something)
 
 Just write in your templates as follows:
