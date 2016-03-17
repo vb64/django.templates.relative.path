@@ -6,8 +6,16 @@ from django.template.loader_tags import IncludeNode, ExtendsNode as ExtendsNodeP
 from django.template.base import TemplateSyntaxError, TemplateEncodingError, StringOrigin, Lexer, Parser, Template as TemplateParent
 from django.utils.encoding import smart_unicode
 
+# for django 1.9
+try:
+    from django.template import Origin, Template as Template_1_9_parent, TemplateDoesNotExist
+    from django.utils.inspect import func_supports_parameter
+    from django.template.base import DebugLexer as DebugLexer_1_9
+    from django.template.utils import get_app_template_dirs
+except:
+    pass
+
 def compile_string(template_string, origin, name):
-    "Compiles template_string into NodeList ready for rendering"
     if settings.TEMPLATE_DEBUG:
         from django.template.debug import DebugLexer, DebugParser
         lexer_class, parser_class = DebugLexer, DebugParser
@@ -32,7 +40,6 @@ class Template(TemplateParent):
         self.origin = origin
 
         # !!! ATTENTION !!!
-        # for django.VERSION > 1.4
         # always use default engine for render
         try:
             from django.template.engine import Engine
@@ -55,6 +62,59 @@ class app_directories(ad.Loader):
         source, origin = self.load_template_source(template_name, template_dirs)
         template = Template(source, name=template_name)
         return template, origin
+
+class Template_1_9(Template_1_9_parent):
+
+    def compile_nodelist(self):
+
+        if self.engine.debug:
+            lexer = DebugLexer_1_9(self.source)
+        else:
+            lexer = Lexer(self.source)
+
+        tokens = lexer.tokenize()
+        parser = Parser(
+            tokens, self.engine.template_libraries, self.engine.template_builtins,
+        )
+
+        parser.template_name = self.origin.template_name
+
+        try:
+            return parser.parse()
+        except Exception as e:
+            if self.engine.debug:
+                e.template_debug = self.get_exception_info(e, e.token)
+            raise
+
+class filesystem_1_9(fs.Loader):
+
+    def get_template(self, template_name, template_dirs=None, skip=None):
+        tried = []
+
+        args = [template_name]
+        if func_supports_parameter(self.get_template_sources, 'template_dirs'):
+            args.append(template_dirs)
+
+        for origin in self.get_template_sources(*args):
+            if skip is not None and origin in skip:
+                tried.append((origin, 'Skipped'))
+                continue
+
+            try:
+                contents = self.get_contents(origin)
+            except TemplateDoesNotExist:
+                tried.append((origin, 'Source does not exist'))
+                continue
+            else:
+                return Template_1_9(
+                    contents, origin, origin.template_name, self.engine,
+                )
+
+        raise TemplateDoesNotExist(template_name, tried=tried)
+
+class app_directories_1_9(filesystem_1_9):
+    def get_dirs(self):
+        return get_app_template_dirs('templates')
 
 from django import template
 register = template.Library()
