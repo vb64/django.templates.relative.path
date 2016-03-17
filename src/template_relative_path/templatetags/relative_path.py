@@ -6,12 +6,16 @@ from django.template.loader_tags import IncludeNode, ExtendsNode as ExtendsNodeP
 from django.template.base import TemplateSyntaxError, TemplateEncodingError, StringOrigin, Lexer, Parser, Template as TemplateParent
 from django.utils.encoding import smart_unicode
 
-# 1.9
-from django.template import Origin, Template as Template_1_9_parent, TemplateDoesNotExist
-from django.utils.inspect import func_supports_parameter
+# for django 1.9
+try:
+    from django.template import Origin, Template as Template_1_9_parent, TemplateDoesNotExist
+    from django.utils.inspect import func_supports_parameter
+    from django.template.base import DebugLexer as DebugLexer_1_9
+    from django.template.utils import get_app_template_dirs
+except:
+    pass
 
 def compile_string(template_string, origin, name):
-    "Compiles template_string into NodeList ready for rendering"
     if settings.TEMPLATE_DEBUG:
         from django.template.debug import DebugLexer, DebugParser
         lexer_class, parser_class = DebugLexer, DebugParser
@@ -60,22 +64,34 @@ class app_directories(ad.Loader):
         return template, origin
 
 class Template_1_9(Template_1_9_parent):
-    pass
+
+    def compile_nodelist(self):
+
+        if self.engine.debug:
+            lexer = DebugLexer_1_9(self.source)
+        else:
+            lexer = Lexer(self.source)
+
+        tokens = lexer.tokenize()
+        parser = Parser(
+            tokens, self.engine.template_libraries, self.engine.template_builtins,
+        )
+
+        parser.template_name = self.origin.template_name
+
+        try:
+            return parser.parse()
+        except Exception as e:
+            if self.engine.debug:
+                e.template_debug = self.get_exception_info(e, e.token)
+            raise
 
 class filesystem_1_9(fs.Loader):
 
     def get_template(self, template_name, template_dirs=None, skip=None):
-        """
-        Calls self.get_template_sources() and returns a Template object for
-        the first template matching template_name. If skip is provided,
-        template origins in skip are ignored. This is used to avoid recursion
-        during template extending.
-        """
         tried = []
 
         args = [template_name]
-        # RemovedInDjango20Warning: Add template_dirs for compatibility with
-        # old loaders
         if func_supports_parameter(self.get_template_sources, 'template_dirs'):
             args.append(template_dirs)
 
@@ -95,6 +111,10 @@ class filesystem_1_9(fs.Loader):
                 )
 
         raise TemplateDoesNotExist(template_name, tried=tried)
+
+class app_directories_1_9(filesystem_1_9):
+    def get_dirs(self):
+        return get_app_template_dirs('templates')
 
 from django import template
 register = template.Library()

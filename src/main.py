@@ -41,8 +41,8 @@ if ver_major == 1:
                 'OPTIONS': {
 
                     'loaders': [
-                        'template_relative_path.templatetags.relative_path.filesystem',
-                        'template_relative_path.templatetags.relative_path.app_directories',
+                        'template_relative_path.templatetags.relative_path.filesystem_1_9',
+                        'template_relative_path.templatetags.relative_path.app_directories_1_9',
                     ],
 
                     'libraries': {
@@ -53,6 +53,8 @@ if ver_major == 1:
                 },
             }],
         )
+
+        c = {}
 
     else:
 
@@ -76,11 +78,10 @@ if ver_major == 1:
         
         )
 
+        c = template.Context({})
 
     if ver_minor > 6:
         django.setup()
-
-c = template.Context({})
 
 def rend(template):
     return get_template(template).render(c)
