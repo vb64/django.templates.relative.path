@@ -48,8 +48,6 @@ if ver_major == 1:
                     'libraries': {
                         'relative_path': 'template_relative_path.templatetags.relative_path',
                     },
-
-
                 },
             }],
         )
