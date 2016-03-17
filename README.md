@@ -37,3 +37,46 @@ Write your template with caution.
 
 **Compatibility**
 Code was tested with Django versions from 1.4 to 1.9
+
+Installation.
+-------------
+
+Installation is differs for Django version 1.9 and previous versions, because 1.9 brings many changes into template's mechanizm.
+
+**Django 1.9**
+
+Plug reference to library code in 'TEMPLATES' key of settings.py or django.settings.configure()
+
+```
+TEMPLATES = [{
+    'BACKEND': 'django.template.backends.django.DjangoTemplates',
+    'DIRS': [os.path.join(ROOT_PROJECT, 'tpl').replace('\\', '/')],
+    'OPTIONS': {
+
+        'loaders': [
+            'dotted_path_to_relative_path_file.filesystem_1_9',
+            'dotted_path_to_relative_path_file.app_directories_1_9',
+        ],
+
+        'libraries': {
+            'relative_path': 'dotted_path_to_relative_path_file',
+        },
+    },
+}]
+```
+
+
+**Django 1.4/1.8**
+
+Put 'relative_path.py' file to the 'templatetags' folders of your app. (app must be included into INSTALLED_APPS tuple)
+
+In settings.py or django.settings.configure(), replace standard django template loaders by loaders from this library
+
+```
+TEMPLATE_LOADERS = (
+#    'django.template.loaders.filesystem.Loader',
+#    'django.template.loaders.app_directories.Loader',
+    'dotted_path_to_relative_path_file.filesystem',
+    'dotted_path_to_relative_path_file.app_directories',
+)
+```
