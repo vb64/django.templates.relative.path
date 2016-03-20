@@ -16,6 +16,15 @@ u'Base1. sub3 content'
 u'Base2. sub4 content'
 >>> rend('subdir/subdir2/sub5.html')
 u'Base2. include content'
+
+>>> construct_relative_path ('dir1/dir2/index.html', '".template.html"')
+'"dir1/dir2/template.html"'
+
+>>> construct_relative_path ('dir1/dir2/schedule.html', '"template.html"')
+'"template.html"'
+
+>>> construct_relative_path ('dir1/dir2/schedule.html', '"..template.html"')
+'"dir1/template.html"'
 """
 import os
 
@@ -83,6 +92,8 @@ if ver_major == 1:
 
 def rend(template):
     return get_template(template).render(c)
+
+from template_relative_path.templatetags.relative_path import construct_relative_path
 
 if __name__ == "__main__":
     import doctest
