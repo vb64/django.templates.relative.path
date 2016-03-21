@@ -1,4 +1,4 @@
-Relative pathes for Django template tags 'extends' and 'include'.
+Relative paths for Django template tags 'extends' and 'include'.
 ================================================================
 
 [The problem](http://stackoverflow.com/questions/671369/django-specifying-a-base-template-by-directory): {% extends "../base.html" %} won't work with extends.
