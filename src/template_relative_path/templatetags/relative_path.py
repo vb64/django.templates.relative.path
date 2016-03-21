@@ -234,7 +234,7 @@ register = template.Library()
 class ExtendsNode(ExtendsNodeParent):
     must_be_first = False
 
-def construct_relative_path (name, relative_name):
+def construct_relative_path(name, relative_name):
     if not relative_name.startswith('"'):
         # argument is variable
         return relative_name
@@ -250,13 +250,14 @@ def construct_relative_path (name, relative_name):
         # relative_name not starts with '.'
         return relative_name
 
-    folders = os.path.dirname(name).split('/')
+    folders = name.split('/')[:-1]
     if levels > len(folders):
         raise TemplateSyntaxError("Relative name '%s' have more parent folders, then given name '%s'" % (relative_name, name))
 
     result = folders[:len(folders) - levels]
     result.append(relative_name[levels+2:-1])
     return '"%s"' % '/'.join(result)
+
 
 @register.tag('extends')
 def do_extends(parser, token):
