@@ -4,26 +4,27 @@ Library for enable relative pathes in django template tags 'extends' and 'includ
 Origin: https://github.com/vb64/django.templates.relative.path
 
 The problem: http://stackoverflow.com/questions/671369/django-specifying-a-base-template-by-directory
-{% extends "../base.html" %} won't work with extends.
+{% extends "./../base.html" %} won't work with extends.
 It causes a lot of inconvenience, if you have an extensive hierarchy of django templates.
-This library is implementing standard python rules for relative import (from ...module import something)
+
+This library allows relative paths in argument of 'extends' and 'include' template tags. Relative path must start from "./"
 
 Just write in your templates as follows:
 
 {% load relative_path %}
-{% extends ".base.html" %}
+{% extends "./base.html" %}
 
 this will extend template "base.html", located in the same folder, where your template placed
 
 {% load relative_path %}
-{% extends "...base.html" %}
+{% extends "./../../base.html" %}
 
 extend template "base.html", located at two levels higher
 
 same things works with 'include' tag.
 
 {% load relative_path %}
-{% include ".base.html" %}
+{% include "./base.html" %}
 
 include base.html, located near of your template.
 
@@ -120,6 +121,7 @@ except:
 # template loaders
 ################################################
 
+
 def compile_string(template_string, origin, name):
     if settings.TEMPLATE_DEBUG:
         from django.template.debug import DebugLexer, DebugParser
@@ -131,7 +133,9 @@ def compile_string(template_string, origin, name):
     parser.template_name = name
     return parser.parse()
 
+
 class Template(TemplateParent):
+
     def __init__(self, template_string, origin=None, name=None, engine=None):
         try:
             template_string = smart_unicode(template_string)
@@ -160,6 +164,7 @@ class filesystem(fs.Loader):
         template = Template(source, name=template_name)
         return template, origin
 
+
 class app_directories(ad.Loader):
     is_usable = True
 
@@ -167,6 +172,7 @@ class app_directories(ad.Loader):
         source, origin = self.load_template_source(template_name, template_dirs)
         template = Template(source, name=template_name)
         return template, origin
+
 
 class Template_1_9(Template_1_9_parent):
 
@@ -190,6 +196,7 @@ class Template_1_9(Template_1_9_parent):
             if self.engine.debug:
                 e.template_debug = self.get_exception_info(e, e.token)
             raise
+
 
 class filesystem_1_9(fs.Loader):
 
@@ -217,6 +224,7 @@ class filesystem_1_9(fs.Loader):
 
         raise TemplateDoesNotExist(template_name, tried=tried)
 
+
 class app_directories_1_9(filesystem_1_9):
     def get_dirs(self):
         return get_app_template_dirs('templates')
@@ -228,35 +236,55 @@ class app_directories_1_9(filesystem_1_9):
 from django import template
 register = template.Library()
 
+
 # !!! ATTENTION !!!
 # it disable rule, that 'extends' must be first tag in template
 # this need for first {% load relative_path %} tag
 class ExtendsNode(ExtendsNodeParent):
     must_be_first = False
 
+
 def construct_relative_path(name, relative_name):
-    if not relative_name.startswith('"'):
-        # argument is variable
+    """
+    Construct absolute template name based on two chains of folders:
+    into 'relative_name' and 'name'
+    """
+    if not relative_name.startswith('"./'):
+        # argument is variable or literal, that not contain relative path
         return relative_name
 
-    levels = -1
-    for ch in relative_name[1:]:
-        if ch == '.':
-            levels += 1
+    chain = relative_name.split('/')
+    result_template_name = chain[-1].rstrip('"')
+    folders_relative = chain[1:-1]
+    folders_template = name.split('/')[:-1]
+
+    for folder in folders_relative:
+
+        if folder == "..":
+            if folders_template:
+                folders_template = folders_template[:-1]
+            else:
+                raise TemplateSyntaxError(
+                    "Relative name '%s' have more parent folders, then given template name '%s'"
+                    % (relative_name, name)
+                )
+
+        elif folder == ".":
+            pass
+
         else:
-            break
+            folders_template.append(folder)
 
-    if (not name) or (levels < 0):
-        # relative_name not starts with '.'
-        return relative_name
+    folders_template.append(result_template_name)
+    result_template_name = '/'.join(folders_template)
 
-    folders = name.split('/')[:-1]
-    if levels > len(folders):
-        raise TemplateSyntaxError("Relative name '%s' have more parent folders, then given name '%s'" % (relative_name, name))
+    if name == result_template_name:
+        raise TemplateSyntaxError(
+            "Circular dependencies: relative path '%s' was translated to template name '%s'"
+            % (relative_name, name)
+        )
 
-    result = folders[:len(folders) - levels]
-    result.append(relative_name[levels+2:-1])
-    return '"%s"' % '/'.join(result)
+    return '"%s"' % result_template_name
 
 
 @register.tag('extends')
@@ -265,11 +293,13 @@ def do_extends(parser, token):
     if len(bits) != 2:
         raise TemplateSyntaxError("'%s' takes one argument" % bits[0])
 
-    parent_name = parser.compile_filter(construct_relative_path(parser.template_name, bits[1]))
+    bits[1] = construct_relative_path(parser.template_name, bits[1])
+    parent_name = parser.compile_filter(bits[1])
     nodelist = parser.parse()
     if nodelist.get_nodes_by_type(ExtendsNode):
         raise TemplateSyntaxError("'%s' cannot appear more than once in the same template" % bits[0])
     return ExtendsNode(nodelist, parent_name)
+
 
 @register.tag('include')
 def do_include(parser, token):
@@ -296,5 +326,7 @@ def do_include(parser, token):
         options[option] = value
     isolated_context = options.get('only', False)
     namemap = options.get('with', {})
-    return IncludeNode(parser.compile_filter(construct_relative_path(parser.template_name, bits[1])), extra_context=namemap,
+    bits[1] = construct_relative_path(parser.template_name, bits[1])
+
+    return IncludeNode(parser.compile_filter(bits[1]), extra_context=namemap,
                        isolated_context=isolated_context)
