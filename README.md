@@ -1,23 +1,23 @@
 Relative paths for Django template tags 'extends' and 'include'.
 ================================================================
 
-[The problem](http://stackoverflow.com/questions/671369/django-specifying-a-base-template-by-directory): {% extends "../base.html" %} won't work with extends.
+[The problem](http://stackoverflow.com/questions/671369/django-specifying-a-base-template-by-directory): {% extends "./../base.html" %} won't work with extends.
 
 It causes a lot of inconvenience, if you have an extensive hierarchy of django templates.
-This library is implementing standard python rules for relative import (from ...module import something)
+This library allows relative paths in argument of 'extends' and 'include' template tags. Relative path must start from "./"
 
 Just write in your templates as follows:
 
 ```
 {% load relative_path %}
-{% extends ".base.html" %}
+{% extends "./base.html" %}
 ```
 
 this will extend template "base.html", located in the same folder, where your template placed
 
 ```
 {% load relative_path %}
-{% extends "...base.html" %}
+{% extends "./../../base.html" %}
 ```
 
 extend template "base.html", located at two levels higher
@@ -26,7 +26,7 @@ same things works with 'include' tag.
 
 ```
 {% load relative_path %}
-{% include ".base.html" %}
+{% include "./base.html" %}
 ```
 
 include base.html, located near of your template.
