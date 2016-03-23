@@ -54,8 +54,8 @@ TEMPLATES = [{
     'OPTIONS': {
 
         'loaders': [
-            'dotted_path_to_relative_path_file.filesystem_1_9',
-            'dotted_path_to_relative_path_file.app_directories_1_9',
+            'dotted_path_to_relative_path_file.FileSystem19',
+            'dotted_path_to_relative_path_file.AppDirectories19',
         ],
 
         'libraries': {
@@ -76,7 +76,7 @@ In settings.py or django.settings.configure(), replace standard django template 
 TEMPLATE_LOADERS = (
 #    'django.template.loaders.filesystem.Loader',
 #    'django.template.loaders.app_directories.Loader',
-    'dotted_path_to_relative_path_file.filesystem',
-    'dotted_path_to_relative_path_file.app_directories',
+    'dotted_path_to_relative_path_file.FileSystem',
+    'dotted_path_to_relative_path_file.AppDirectories',
 )
 ```
