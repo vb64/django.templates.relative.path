@@ -6,23 +6,17 @@ Library for enable relative pathes in django template tags
 Origin: https://github.com/vb64/django.templates.relative.path
 """
 
-from django.conf import settings
-from django.template.loaders import filesystem as fs, app_directories as ad
-from django.template.loader_tags import (
-    IncludeNode,
-    ExtendsNode as ExtendsNodeParent
-)
-from django.template.base import (
-    TemplateSyntaxError,
-    TemplateEncodingError,
-    StringOrigin,
-    Lexer,
-    Parser,
-    token_kwargs,
-    Template as TemplateParent
-)
-from django.utils.encoding import smart_unicode
 from django import template
+from django.conf import settings
+from django.template.base import Template as TemplateParent
+from django.template.base import (Lexer, Parser, StringOrigin,
+                                  TemplateEncodingError, TemplateSyntaxError,
+                                  token_kwargs)
+from django.template.loader_tags import ExtendsNode as ExtendsNodeParent
+from django.template.loader_tags import IncludeNode
+from django.template.loaders import app_directories as ad
+from django.template.loaders import filesystem as fs
+from django.utils.encoding import smart_unicode
 
 # django 1.9
 try:
