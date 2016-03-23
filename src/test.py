@@ -50,8 +50,8 @@ if ver_major == 1:
                 'OPTIONS': {
 
                     'loaders': [
-                        'template_relative_path.templatetags.relative_path.filesystem_1_9',
-                        'template_relative_path.templatetags.relative_path.app_directories_1_9',
+                        'template_relative_path.templatetags.relative_path.FileSystem_1_9',
+                        'template_relative_path.templatetags.relative_path.AppDirectories_1_9',
                     ],
 
                     'libraries': {
@@ -75,8 +75,8 @@ if ver_major == 1:
             ),
         
             TEMPLATE_LOADERS = (
-                'template_relative_path.templatetags.relative_path.filesystem',
-                'template_relative_path.templatetags.relative_path.app_directories',
+                'template_relative_path.templatetags.relative_path.FileSystem',
+                'template_relative_path.templatetags.relative_path.AppDirectories',
             ),
         
             INSTALLED_APPS = ( 

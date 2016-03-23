@@ -52,8 +52,8 @@ TEMPLATES = [{
     'OPTIONS': {
 
         'loaders': [
-            'dotted_path_to_relative_path_file.filesystem_1_9',
-            'dotted_path_to_relative_path_file.app_directories_1_9',
+            'dotted_path_to_relative_path_file.FileSystem_1_9',
+            'dotted_path_to_relative_path_file.AppDirectories_1_9',
         ],
 
         'libraries': {
@@ -73,8 +73,8 @@ In settings.py or django.settings.configure(), replace standard django template 
 TEMPLATE_LOADERS = (
 #    'django.template.loaders.filesystem.Loader',
 #    'django.template.loaders.app_directories.Loader',
-    'dotted_path_to_relative_path_file.filesystem',
-    'dotted_path_to_relative_path_file.app_directories',
+    'dotted_path_to_relative_path_file.FileSystem',
+    'dotted_path_to_relative_path_file.AppDirectories',
 )
 """
 
@@ -154,9 +154,9 @@ class Template(TemplateParent):
             from django.template.engine import Engine
             self.engine = Engine.get_default()
         except:
-            pass
+            self.engine = None
 
-class filesystem(fs.Loader):
+class FileSystem(fs.Loader):
     is_usable = True
 
     def load_template(self, template_name, template_dirs=None):
@@ -165,7 +165,7 @@ class filesystem(fs.Loader):
         return template, origin
 
 
-class app_directories(ad.Loader):
+class AppDirectories(ad.Loader):
     is_usable = True
 
     def load_template(self, template_name, template_dirs=None):
@@ -198,7 +198,7 @@ class Template_1_9(Template_1_9_parent):
             raise
 
 
-class filesystem_1_9(fs.Loader):
+class FileSystem_1_9(fs.Loader):
 
     def get_template(self, template_name, template_dirs=None, skip=None):
         tried = []
@@ -225,7 +225,8 @@ class filesystem_1_9(fs.Loader):
         raise TemplateDoesNotExist(template_name, tried=tried)
 
 
-class app_directories_1_9(filesystem_1_9):
+class AppDirectories_1_9(FileSystem_1_9):
+
     def get_dirs(self):
         return get_app_template_dirs('templates')
 
