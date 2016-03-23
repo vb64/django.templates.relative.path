@@ -1,116 +1,35 @@
 """
-Library for enable relative pathes in django template tags 'extends' and 'include' 
+Library for enable relative pathes in django template tags
+'extends' and 'include'
+
 (C) 2016 by Vitaly Bogomolov mail@vitaly-bogomolov.ru
 Origin: https://github.com/vb64/django.templates.relative.path
-
-The problem: http://stackoverflow.com/questions/671369/django-specifying-a-base-template-by-directory
-{% extends "./../base.html" %} won't work with extends.
-It causes a lot of inconvenience, if you have an extensive hierarchy of django templates.
-
-This library allows relative paths in argument of 'extends' and 'include' template tags. Relative path must start from "./"
-
-Just write in your templates as follows:
-
-{% load relative_path %}
-{% extends "./base.html" %}
-
-this will extend template "base.html", located in the same folder, where your template placed
-
-{% load relative_path %}
-{% extends "./../../base.html" %}
-
-extend template "base.html", located at two levels higher
-
-same things works with 'include' tag.
-
-{% load relative_path %}
-{% include "./base.html" %}
-
-include base.html, located near of your template.
-
-Warning: 
-The rule 'extends tag must be first tag into template' is disabled by this library. 
-Write your template with caution.
-
-Compatibility:
-Code was tested with Django versions from 1.4 to 1.9
 """
-
-"""
-Installation.
-
-Installation is differs for Django version 1.9 and previous versions, because 1.9 brings many changes into template's mechanizm.
-
-Django 1.9
-----------
-
-Plug reference to library code in 'TEMPLATES' key of settings.py or django.settings.configure()
-
-TEMPLATES = [{
-    'BACKEND': 'django.template.backends.django.DjangoTemplates',
-    'DIRS': [os.path.join(ROOT_PROJECT, 'tpl').replace('\\', '/')],
-    'OPTIONS': {
-
-        'loaders': [
-            'dotted_path_to_relative_path_file.FileSystem19',
-            'dotted_path_to_relative_path_file.AppDirectories19',
-        ],
-
-        'libraries': {
-            'relative_path': 'dotted_path_to_relative_path_file',
-        },
-    },
-}]
-
-
-Django 1.4/1.8
---------------
-
-Put 'relative_path.py' file to the 'templatetags' folders of your app. (app must be included into INSTALLED_APPS tuple)
-
-In settings.py or django.settings.configure(), replace standard django template loaders by loaders from this library
-
-TEMPLATE_LOADERS = (
-#    'django.template.loaders.filesystem.Loader',
-#    'django.template.loaders.app_directories.Loader',
-    'dotted_path_to_relative_path_file.FileSystem',
-    'dotted_path_to_relative_path_file.AppDirectories',
-)
-"""
-
-# The MIT License (MIT)
-# 
-# Copyright (c) 2016 Vitaly Bogomolov
-
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-# 
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-# 
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
-import os
 
 from django.conf import settings
 from django.template.loaders import filesystem as fs, app_directories as ad
-from django.template.loader_tags import IncludeNode, ExtendsNode as ExtendsNodeParent
-from django.template.base import TemplateSyntaxError, TemplateEncodingError, StringOrigin, Lexer, Parser, Template as TemplateParent
+from django.template.loader_tags import (
+    IncludeNode,
+    ExtendsNode as ExtendsNodeParent
+)
+from django.template.base import (
+    TemplateSyntaxError,
+    TemplateEncodingError,
+    StringOrigin,
+    Lexer,
+    Parser,
+    token_kwargs,
+    Template as TemplateParent
+)
 from django.utils.encoding import smart_unicode
+from django import template
 
 # django 1.9
 try:
-    from django.template import Origin, Template as Template19parent, TemplateDoesNotExist
+    from django.template import (
+        TemplateDoesNotExist,
+        Template as Template19parent,
+    )
     from django.utils.inspect import func_supports_parameter
     from django.template.base import DebugLexer as DebugLexer19
     from django.template.utils import get_app_template_dirs
@@ -162,6 +81,7 @@ class Template(TemplateParent):
         except Exception:
             self.engine = None
 
+
 class FileSystem(fs.Loader):
     """
     Use modified Template class
@@ -172,8 +92,16 @@ class FileSystem(fs.Loader):
         """
         Use modified Template class and pass template name
         """
-        source, origin = self.load_template_source(template_name, template_dirs)
-        template = Template(source, name=template_name)
+        source, origin = self.load_template_source(
+            template_name,
+            template_dirs
+        )
+
+        template = Template(
+            source,
+            name=template_name
+        )
+
         return template, origin
 
 
@@ -187,7 +115,9 @@ class AppDirectories(ad.Loader):
         """
         Use modified Template class and pass template name
         """
-        source, origin = self.load_template_source(template_name, template_dirs)
+        source, origin = self.load_template_source(
+            template_name, template_dirs
+        )
         template = Template(source, name=template_name)
         return template, origin
 
@@ -209,7 +139,9 @@ class Template19(Template19parent):
 
         tokens = lexer.tokenize()
         parser = Parser(
-            tokens, self.engine.template_libraries, self.engine.template_builtins,
+            tokens,
+            self.engine.template_libraries,
+            self.engine.template_builtins,
         )
 
         parser.template_name = self.origin.template_name
@@ -271,7 +203,6 @@ class AppDirectories19(FileSystem19):
 # template tags 'extends' and 'include'
 ################################################
 
-from django import template
 register = template.Library()
 
 
@@ -305,7 +236,8 @@ def construct_relative_path(name, relative_name):
                 folders_template = folders_template[:-1]
             else:
                 raise TemplateSyntaxError(
-                    "Relative name '%s' have more parent folders, then given template name '%s'"
+                    "Relative name '%s' have more parent folders, "
+                    "then given template name '%s'"
                     % (relative_name, name)
                 )
 
@@ -320,7 +252,8 @@ def construct_relative_path(name, relative_name):
 
     if name == result_template_name:
         raise TemplateSyntaxError(
-            "Circular dependencies: relative path '%s' was translated to template name '%s'"
+            "Circular dependencies: relative path '%s'"
+            " was translated to template name '%s'"
             % (relative_name, name)
         )
 
@@ -340,7 +273,10 @@ def do_extends(parser, token):
     parent_name = parser.compile_filter(bits[1])
     nodelist = parser.parse()
     if nodelist.get_nodes_by_type(ExtendsNode):
-        raise TemplateSyntaxError("'%s' cannot appear more than once in the same template" % bits[0])
+        raise TemplateSyntaxError(
+            "'%s' cannot appear more than once in the same template"
+            % bits[0]
+            )
     return ExtendsNode(nodelist, parent_name)
 
 
@@ -352,7 +288,8 @@ def do_include(parser, token):
     bits = token.split_contents()
     if len(bits) < 2:
         raise TemplateSyntaxError(
-            "%r tag takes at least one argument: the name of the template to be included." 
+            "%r tag takes at least one argument: "
+            "the name of the template to be included."
             % bits[0]
         )
     options = {}
