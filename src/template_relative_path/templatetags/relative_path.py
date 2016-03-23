@@ -169,6 +169,9 @@ class FileSystem(fs.Loader):
     is_usable = True
 
     def load_template(self, template_name, template_dirs=None):
+        """
+        Use modified Template class and pass template name
+        """
         source, origin = self.load_template_source(template_name, template_dirs)
         template = Template(source, name=template_name)
         return template, origin
@@ -181,6 +184,9 @@ class AppDirectories(ad.Loader):
     is_usable = True
 
     def load_template(self, template_name, template_dirs=None):
+        """
+        Use modified Template class and pass template name
+        """
         source, origin = self.load_template_source(template_name, template_dirs)
         template = Template(source, name=template_name)
         return template, origin
@@ -192,6 +198,9 @@ class Template19(Template19parent):
     """
 
     def compile_nodelist(self):
+        """
+        Pass template name to parser instance
+        """
 
         if self.engine.debug:
             lexer = DebugLexer19(self.source)
@@ -219,6 +228,10 @@ class FileSystem19(fs.Loader):
     """
 
     def get_template(self, template_name, template_dirs=None, skip=None):
+        """
+        Use modified Template19 class and
+        pass template name to instance
+        """
         tried = []
 
         args = [template_name]
@@ -249,6 +262,9 @@ class AppDirectories19(FileSystem19):
     """
 
     def get_dirs(self):
+        """
+        Same as core function
+        """
         return get_app_template_dirs('templates')
 
 ################################################
