@@ -52,8 +52,8 @@ TEMPLATES = [{
     'OPTIONS': {
 
         'loaders': [
-            'dotted_path_to_relative_path_file.FileSystem_1_9',
-            'dotted_path_to_relative_path_file.AppDirectories_1_9',
+            'dotted_path_to_relative_path_file.FileSystem19',
+            'dotted_path_to_relative_path_file.AppDirectories19',
         ],
 
         'libraries': {
@@ -110,9 +110,9 @@ from django.utils.encoding import smart_unicode
 
 # django 1.9
 try:
-    from django.template import Origin, Template as Template_1_9_parent, TemplateDoesNotExist
+    from django.template import Origin, Template as Template19parent, TemplateDoesNotExist
     from django.utils.inspect import func_supports_parameter
-    from django.template.base import DebugLexer as DebugLexer_1_9
+    from django.template.base import DebugLexer as DebugLexer19
     from django.template.utils import get_app_template_dirs
 except:
     pass
@@ -123,6 +123,9 @@ except:
 
 
 def compile_string(template_string, origin, name):
+    """
+    Set template name to Parser instance
+    """
     if settings.TEMPLATE_DEBUG:
         from django.template.debug import DebugLexer, DebugParser
         lexer_class, parser_class = DebugLexer, DebugParser
@@ -135,6 +138,9 @@ def compile_string(template_string, origin, name):
 
 
 class Template(TemplateParent):
+    """
+    Pass template name to Parser
+    """
 
     def __init__(self, template_string, origin=None, name=None, engine=None):
         try:
@@ -153,10 +159,13 @@ class Template(TemplateParent):
         try:
             from django.template.engine import Engine
             self.engine = Engine.get_default()
-        except:
+        except Exception:
             self.engine = None
 
 class FileSystem(fs.Loader):
+    """
+    Use modified Template class
+    """
     is_usable = True
 
     def load_template(self, template_name, template_dirs=None):
@@ -166,6 +175,9 @@ class FileSystem(fs.Loader):
 
 
 class AppDirectories(ad.Loader):
+    """
+    Use modified Template class
+    """
     is_usable = True
 
     def load_template(self, template_name, template_dirs=None):
@@ -174,12 +186,15 @@ class AppDirectories(ad.Loader):
         return template, origin
 
 
-class Template_1_9(Template_1_9_parent):
+class Template19(Template19parent):
+    """
+    Pass template name to Parser into Django 1.9
+    """
 
     def compile_nodelist(self):
 
         if self.engine.debug:
-            lexer = DebugLexer_1_9(self.source)
+            lexer = DebugLexer19(self.source)
         else:
             lexer = Lexer(self.source)
 
@@ -198,7 +213,10 @@ class Template_1_9(Template_1_9_parent):
             raise
 
 
-class FileSystem_1_9(fs.Loader):
+class FileSystem19(fs.Loader):
+    """
+    Use modified Template19 class
+    """
 
     def get_template(self, template_name, template_dirs=None, skip=None):
         tried = []
@@ -218,14 +236,17 @@ class FileSystem_1_9(fs.Loader):
                 tried.append((origin, 'Source does not exist'))
                 continue
             else:
-                return Template_1_9(
+                return Template19(
                     contents, origin, origin.template_name, self.engine,
                 )
 
         raise TemplateDoesNotExist(template_name, tried=tried)
 
 
-class AppDirectories_1_9(FileSystem_1_9):
+class AppDirectories19(FileSystem19):
+    """
+    Use modified Template19 class
+    """
 
     def get_dirs(self):
         return get_app_template_dirs('templates')
@@ -238,10 +259,12 @@ from django import template
 register = template.Library()
 
 
-# !!! ATTENTION !!!
-# it disable rule, that 'extends' must be first tag in template
-# this need for first {% load relative_path %} tag
 class ExtendsNode(ExtendsNodeParent):
+    """
+    !!! ATTENTION !!!
+    it disable rule, that 'extends' must be first tag in template
+    this need for first {% load relative_path %} tag
+    """
     must_be_first = False
 
 
@@ -290,6 +313,9 @@ def construct_relative_path(name, relative_name):
 
 @register.tag('extends')
 def do_extends(parser, token):
+    """
+    Same as core function, with construct_relative_path call
+    """
     bits = token.split_contents()
     if len(bits) != 2:
         raise TemplateSyntaxError("'%s' takes one argument" % bits[0])
@@ -304,9 +330,15 @@ def do_extends(parser, token):
 
 @register.tag('include')
 def do_include(parser, token):
+    """
+    Same as core function, with construct_relative_path call
+    """
     bits = token.split_contents()
     if len(bits) < 2:
-        raise TemplateSyntaxError("%r tag takes at least one argument: the name of the template to be included." % bits[0])
+        raise TemplateSyntaxError(
+            "%r tag takes at least one argument: the name of the template to be included." 
+            % bits[0]
+        )
     options = {}
     remaining_bits = bits[2:]
     while remaining_bits:

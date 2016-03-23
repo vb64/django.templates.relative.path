@@ -50,8 +50,8 @@ if ver_major == 1:
                 'OPTIONS': {
 
                     'loaders': [
-                        'template_relative_path.templatetags.relative_path.FileSystem_1_9',
-                        'template_relative_path.templatetags.relative_path.AppDirectories_1_9',
+                        'template_relative_path.templatetags.relative_path.FileSystem19',
+                        'template_relative_path.templatetags.relative_path.AppDirectories19',
                     ],
 
                     'libraries': {
