@@ -212,6 +212,11 @@ class ExtendsNode(ExtendsNodeParent):
 
 
 def construct_relative_path(name, relative_name):
+    """
+    Construct new path from saved into parser instance name and given
+    relative path in extends/include handlers with posixpath functions,
+    then handle new path by standard extends/include rules.
+    """
 
     if not relative_name.startswith('"./'):
         # argument is variable or literal, that not contain relative path
