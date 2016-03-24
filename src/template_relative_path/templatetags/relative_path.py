@@ -6,6 +6,8 @@ Library for enable relative pathes in django template tags
 Origin: https://github.com/vb64/django.templates.relative.path
 """
 
+import posixpath
+
 from django import template
 from django.conf import settings
 from django.template.base import Template as TemplateParent
@@ -211,47 +213,35 @@ class ExtendsNode(ExtendsNodeParent):
 
 def construct_relative_path(name, relative_name):
     """
-    Construct absolute template name based on two chains of folders:
-    into 'relative_name' and 'name'
+    Construct new path from saved into parser instance name and given
+    relative path in extends/include handlers with posixpath functions,
+    then handle new path by standard extends/include rules.
     """
+
     if not relative_name.startswith('"./'):
         # argument is variable or literal, that not contain relative path
         return relative_name
 
-    chain = relative_name.split('/')
-    result_template_name = chain[-1].rstrip('"')
-    folders_relative = chain[1:-1]
-    folders_template = name.split('/')[:-1]
+    new_name = posixpath.normpath(
+        posixpath.join(
+            posixpath.dirname(name.lstrip('/')),
+            relative_name.strip('"')
+        )
+    )
 
-    for folder in folders_relative:
-
-        if folder == "..":
-            if folders_template:
-                folders_template = folders_template[:-1]
-            else:
-                raise TemplateSyntaxError(
-                    "Relative name '%s' have more parent folders, "
-                    "then given template name '%s'"
-                    % (relative_name, name)
-                )
-
-        elif folder == ".":
-            pass
-
-        else:
-            folders_template.append(folder)
-
-    folders_template.append(result_template_name)
-    result_template_name = '/'.join(folders_template)
-
-    if name == result_template_name:
+    if new_name.startswith('../'):
         raise TemplateSyntaxError(
-            "Circular dependencies: relative path '%s'"
-            " was translated to template name '%s'"
+            "Relative name '%s' have more parent folders, then given template name '%s'"
             % (relative_name, name)
         )
 
-    return '"%s"' % result_template_name
+    if name.lstrip('/') == new_name:
+        raise TemplateSyntaxError(
+            "Circular dependencies: relative path '%s' was translated to template name '%s'"
+            % (relative_name, name)
+        )
+
+    return '"%s"' % new_name
 
 
 @register.tag('extends')
