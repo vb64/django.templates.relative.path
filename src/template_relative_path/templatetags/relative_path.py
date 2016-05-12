@@ -213,19 +213,19 @@ class ExtendsNode(ExtendsNodeParent):
 
 def construct_relative_path(name, relative_name):
     """
-    Construct new path from saved into parser instance name and given
-    relative path in extends/include handlers with posixpath functions,
-    then handle new path by standard extends/include rules.
+    Convert a relative_name (starting with './') to the full template
+    name based on the current template name.
     """
 
-    if not relative_name.startswith('"./'):
-        # argument is variable or literal, that not contain relative path
+    if not any(relative_name.startswith(x) for x in ["'./", '"./']):
+        # argument is a variable or a literal,
+        # that doesn't contain a relative path
         return relative_name
 
     new_name = posixpath.normpath(
         posixpath.join(
             posixpath.dirname(name.lstrip('/')),
-            relative_name.strip('"')
+            relative_name.strip('\'"')
         )
     )
 
