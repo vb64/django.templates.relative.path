@@ -42,23 +42,23 @@ if ver_major == 1:
     if ver_minor > 8:
         settings.configure(
 
-            DEBUG = True, 
+          DEBUG=True,
 
-            TEMPLATES = [{
-                'BACKEND': 'django.template.backends.django.DjangoTemplates',
-                'DIRS': [os.path.join(ROOT_PROJECT, 'tpl').replace('\\', '/')],
-                'OPTIONS': {
+          TEMPLATES=[{
+            'BACKEND': 'django.template.backends.django.DjangoTemplates',
+            'DIRS': [os.path.join(ROOT_PROJECT, 'tpl').replace('\\', '/')],
+            'OPTIONS': {
 
-                    'loaders': [
-                        'template_relative_path.templatetags.relative_path.FileSystem19',
-                        'template_relative_path.templatetags.relative_path.AppDirectories19',
-                    ],
+              'loaders': [
+                'template_relative_path.templatetags.relative_path.FileSystem19',  # noqa
+                'template_relative_path.templatetags.relative_path.AppDirectories19',  # noqa
+              ],
 
-                    'libraries': {
-                        'relative_path': 'template_relative_path.templatetags.relative_path',
-                    },
-                },
-            }],
+              'libraries': {
+                'relative_path': 'template_relative_path.templatetags.relative_path',  # noqa
+              },
+            },
+          }],
         )
 
         c = {}
@@ -66,23 +66,23 @@ if ver_major == 1:
     else:
 
         settings.configure(
-        
-            DEBUG = True, 
-            TEMPLATE_DEBUG = True,
-        
-            TEMPLATE_DIRS = (
-                os.path.join(ROOT_PROJECT, 'tpl').replace('\\', '/'),
-            ),
-        
-            TEMPLATE_LOADERS = (
-                'template_relative_path.templatetags.relative_path.FileSystem',
-                'template_relative_path.templatetags.relative_path.AppDirectories',
-            ),
-        
-            INSTALLED_APPS = ( 
-                'template_relative_path',
-            ),
-        
+
+          DEBUG=True,
+          TEMPLATE_DEBUG=True,
+
+          TEMPLATE_DIRS=(
+            os.path.join(ROOT_PROJECT, 'tpl').replace('\\', '/'),
+          ),
+
+          TEMPLATE_LOADERS=(
+            'template_relative_path.templatetags.relative_path.FileSystem',
+            'template_relative_path.templatetags.relative_path.AppDirectories',
+          ),
+
+          INSTALLED_APPS=(
+            'template_relative_path',
+          ),
+
         )
 
         c = template.Context({})
@@ -90,10 +90,12 @@ if ver_major == 1:
     if ver_minor > 6:
         django.setup()
 
+
 def rend(template):
     return get_template(template).render(c)
 
-from template_relative_path.templatetags.relative_path import construct_relative_path
+
+from template_relative_path.templatetags.relative_path import construct_relative_path  # noqa
 
 if __name__ == "__main__":
     import doctest

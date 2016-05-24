@@ -231,13 +231,15 @@ def construct_relative_path(name, relative_name):
 
     if new_name.startswith('../'):
         raise TemplateSyntaxError(
-            "Relative name '%s' have more parent folders, then given template name '%s'"
+            "Relative name '%s' have more parent folders, "
+            "then given template name '%s'"
             % (relative_name, name)
         )
 
     if name.lstrip('/') == new_name:
         raise TemplateSyntaxError(
-            "Circular dependencies: relative path '%s' was translated to template name '%s'"
+            "Circular dependencies: relative path '%s' "
+            "was translated to template name '%s'"
             % (relative_name, name)
         )
 
